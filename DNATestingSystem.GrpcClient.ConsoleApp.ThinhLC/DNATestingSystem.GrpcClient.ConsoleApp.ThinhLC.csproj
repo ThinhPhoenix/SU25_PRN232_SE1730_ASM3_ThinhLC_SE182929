@@ -17,9 +17,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Protobuf Include="Protos\greet.proto" GrpcServices="Server" />
-    <Protobuf Include="Protos\samplethinhlc.proto" GrpcServices="Server" />
-    <Protobuf Include="Protos\sampletypethinhlc.proto" GrpcServices="Server" />
+    <Protobuf Include="Protos\greet.proto" GrpcServices="Client" ProtoRoot="Protos" />
+    <Protobuf Include="Protos\common.proto" GrpcServices="Client" ProtoRoot="Protos" />
+    <Protobuf Include="Protos\samplethinhlc.proto" GrpcServices="Client" ProtoRoot="Protos" />
+    <Protobuf Include="Protos\sampletypethinhlc.proto" GrpcServices="Client" ProtoRoot="Protos" />
   </ItemGroup>
 
 </Project>

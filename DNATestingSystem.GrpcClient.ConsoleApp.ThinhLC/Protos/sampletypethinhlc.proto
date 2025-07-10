@@ -1,5 +1,7 @@
 syntax = "proto3";
 
+package DNATestingSystem.GrpcService.ThinhLC.Protos;
+
 import "common.proto";
 
 option csharp_namespace = "DNATestingSystem.GrpcService.ThinhLC.Protos";
