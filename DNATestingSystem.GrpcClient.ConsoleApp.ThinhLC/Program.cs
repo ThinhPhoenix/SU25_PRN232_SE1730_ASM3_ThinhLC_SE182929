@@ -1,344 +1,213 @@
-﻿// using DNATestingSystem.GrpcService.ThinhLC.Protos;
-// using Grpc.Net.Client;
+﻿using DNATestingSystem.GrpcService.ThinhLC.Protos;
+using Grpc.Net.Client;
+using System;
+using System.Threading.Tasks;
 
-// class Program
-// {
-//     private static SampleThinhLCGRPC.SampleThinhLCGRPCClient? client;
-//     private static GrpcChannel? channel;
+class Program
+{
+    static SampleThinhLCGRPC.SampleThinhLCGRPCClient? sampleClient;
+    static SampleTypeThinhLCGRPC.SampleTypeThinhLCGRPCClient? sampleTypeClient;
+    static GrpcChannel? channel;
 
-//     static async Task Main(string[] args)
-//     {
-//     //    Console.WriteLine("=== DNA Testing System - Sample Management ===");
+    static async Task Main(string[] args)
+    {
+        channel = GrpcChannel.ForAddress("https://localhost:7265");
+        sampleClient = new SampleThinhLCGRPC.SampleThinhLCGRPCClient(channel);
+        sampleTypeClient = new SampleTypeThinhLCGRPC.SampleTypeThinhLCGRPCClient(channel);
+        bool exit = false;
+        while (!exit)
+        {
+            Console.WriteLine("\n--- Main Menu ---");
+            Console.WriteLine("1. SampleThinhLc CRUD");
+            Console.WriteLine("2. SampleTypeThinhLc CRUD");
+            Console.WriteLine("0. Exit");
+            Console.Write("Choose: ");
+            var mainChoice = Console.ReadLine();
+            switch (mainChoice)
+            {
+                case "1":
+                    await SampleThinhLcCrud(sampleClient);
+                    break;
+                case "2":
+                    await SampleTypeThinhLcCrud(sampleTypeClient);
+                    break;
+                case "0":
+                    exit = true;
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+        }
+        channel?.Dispose();
+    }
 
-//     //    // Initialize gRPC client
-//     //    try
-//     //    {
-//     //        channel = GrpcChannel.ForAddress("https://localhost:7265");
-//     //        client = new SampleThinhLCGRPC.SampleThinhLCGRPCClient(channel);
-//     //        Console.WriteLine("Connected to gRPC service successfully!");
-//     //    }
-//     //    catch (Exception ex)
-//     //    {
-//     //        Console.WriteLine($"Failed to connect to gRPC service: {ex.Message}");
-//     //        Console.WriteLine("Press any key to exit...");
-//     //        Console.ReadKey();
-//     //        return;
-//     //    }
+    static async Task SampleThinhLcCrud(SampleThinhLCGRPC.SampleThinhLCGRPCClient client)
+    {
+        bool back = false;
+        while (!back)
+        {
+            Console.WriteLine("\n--- SampleThinhLC CRUD ---");
+            Console.WriteLine("1. List all");
+            Console.WriteLine("2. Get by ID");
+            Console.WriteLine("3. Create");
+            Console.WriteLine("4. Update");
+            Console.WriteLine("5. Delete");
+            Console.WriteLine("0. Back");
+            Console.Write("Choose: ");
+            var choice = Console.ReadLine();
+            switch (choice)
+            {
+                case "1":
+                    var allResponse = client.GetAllAsync(new EmptyRequest());
+                    foreach (var s in allResponse.Items)
+                    {
+                        Console.WriteLine($"ID: {s.SampleThinhLcid}, Notes: {s.Notes}, Count: {s.Count}, isProcessed: {s.IsProcessed}, CollectedAt: {s.CollectedAt}, CreatedAt: {s.CreatedAt}, UpdatedAt: {s.UpdatedAt}, DeletedAt: {s.DeletedAt}");
+                    }
+                    break;
+                case "2":
+                    Console.Write("Enter ID: ");
+                    if (int.TryParse(Console.ReadLine(), out int gid))
+                    {
+                        var item = await client.GetByIdAsync(new SampleThinhLcIDRequest { SampleThinhLcid = gid });
+                        if (item != null && item.SampleThinhLcid != 0)
+                        {
+                            Console.WriteLine($"ID: {item.SampleThinhLcid}, Notes: {item.Notes}, Count: {item.Count}, isProcessed: {item.IsProcessed}, CollectedAt: {item.CollectedAt}, CreatedAt: {item.CreatedAt}, UpdatedAt: {item.UpdatedAt}, DeletedAt: {item.DeletedAt}");
+                        }
+                        else Console.WriteLine("Not found.");
+                    }
+                    break;
+                case "3":
+                    var create = new SampleThinhLc();
+                    Console.Write("ProfileThinhLcid: "); create.ProfileThinhLcid = int.TryParse(Console.ReadLine(), out int pid) ? pid : 0;
+                    Console.Write("SampleTypeThinhLcid: "); create.SampleTypeThinhLcid = int.TryParse(Console.ReadLine(), out int stid) ? stid : 0;
+                    Console.Write("AppointmentsTienDmid: "); create.AppointmentsTienDmid = int.TryParse(Console.ReadLine(), out int aid) ? aid : 0;
+                    Console.Write("Notes: "); create.Notes = Console.ReadLine();
+                    Console.Write("IsProcessed (true/false): "); var isProc = Console.ReadLine(); create.IsProcessed = bool.TryParse(isProc, out bool ip) ? ip : false;
+                    Console.Write("Count: "); create.Count = int.TryParse(Console.ReadLine(), out int c) ? c : 0;
+                    create.CollectedAt = DateTime.Now.ToString("o");
+                    create.CreatedAt = DateTime.Now.ToString("o");
+                    create.UpdatedAt = DateTime.Now.ToString("o");
+                    create.DeletedAt = string.Empty;
+                    var cr = await client.CreateAsync(create);
+                    Console.WriteLine($"Created, result: {cr.Message}");
+                    break;
+                case "4":
+                    Console.Write("Enter ID to update: ");
+                    if (int.TryParse(Console.ReadLine(), out int uid))
+                    {
+                        var up = await client.GetByIdAsync(new SampleThinhLcIDRequest { SampleThinhLcid = uid });
+                        if (up != null && up.SampleThinhLcid != 0)
+                        {
+                            string pidStr, stidStr, aidStr, isProcStr, cntStr;
+                            Console.Write($"ProfileThinhLcid ({up.ProfileThinhLcid}): "); pidStr = Console.ReadLine(); if (int.TryParse(pidStr, out int pidVal)) up.ProfileThinhLcid = pidVal;
+                            Console.Write($"SampleTypeThinhLcid ({up.SampleTypeThinhLcid}): "); stidStr = Console.ReadLine(); if (int.TryParse(stidStr, out int stidVal)) up.SampleTypeThinhLcid = stidVal;
+                            Console.Write($"AppointmentsTienDmid ({up.AppointmentsTienDmid}): "); aidStr = Console.ReadLine(); if (int.TryParse(aidStr, out int aidVal)) up.AppointmentsTienDmid = aidVal;
+                            Console.Write($"Notes ({up.Notes}): "); var n = Console.ReadLine(); if (!string.IsNullOrEmpty(n)) up.Notes = n;
+                            Console.Write($"IsProcessed ({up.IsProcessed}): "); isProcStr = Console.ReadLine(); if (bool.TryParse(isProcStr, out bool ipVal)) up.IsProcessed = ipVal;
+                            Console.Write($"Count ({up.Count}): "); cntStr = Console.ReadLine(); if (int.TryParse(cntStr, out int cntVal)) up.Count = cntVal;
+                            up.UpdatedAt = DateTime.Now.ToString("o");
+                            var ur = await client.UpdateAsync(up);
+                            Console.WriteLine($"Updated, result: {ur.Message}");
+                        }
+                        else Console.WriteLine("Not found.");
+                    }
+                    break;
+                case "5":
+                    Console.Write("Enter ID to delete: ");
+                    if (int.TryParse(Console.ReadLine(), out int did))
+                    {
+                        var dr = await client.DeleteAsync(new SampleThinhLcIDRequest { SampleThinhLcid = did });
+                        Console.WriteLine($"Deleted, result: {dr.Message}");
+                    }
+                    break;
+                case "0":
+                    back = true;
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+        }
+    }
 
-//     //    bool exit = false;
-//     //    while (!exit)
-//     //    {
-//     //        ShowMenu();
-//     //        var choice = Console.ReadLine();
-
-//     //        switch (choice)
-//     //        {
-//     //            case "1":
-//     //                await ShowAllSamples();
-//     //                break;
-//     //            case "2":
-//     //                await ShowSampleDetail();
-//     //                break;
-//     //            case "3":
-//     //                await CreateSample();
-//     //                break;
-//     //            case "4":
-//     //                await UpdateSample();
-//     //                break;
-//     //            case "5":
-//     //                await DeleteSample();
-//     //                break;
-//     //            case "6":
-//     //                exit = true;
-//     //                Console.WriteLine("Goodbye!");
-//     //                break;
-//     //            default:
-//     //                Console.WriteLine("Invalid choice! Please try again.");
-//     //                break;
-//     //        }
-
-//     //        if (!exit)
-//     //        {
-//     //            Console.WriteLine("\nPress any key to continue...");
-//     //            Console.ReadKey();
-//     //        }
-//     //    }
-
-//     //    // Cleanup
-//     //    channel?.Dispose();
-//     //}
-
-//     //static void ShowMenu()
-//     //{
-//     //    Console.Clear();
-//     //    Console.WriteLine("=== DNA Testing System - Sample Management ===");
-//     //    Console.WriteLine("1. Show All Samples");
-//     //    Console.WriteLine("2. Show Sample Detail");
-//     //    Console.WriteLine("3. Create New Sample");
-//     //    Console.WriteLine("4. Update Sample");
-//     //    Console.WriteLine("5. Delete Sample");
-//     //    Console.WriteLine("6. Exit");
-//     //    Console.WriteLine("===============================================");
-//     //    Console.Write("Please select an option (1-6): ");
-//     //}
-
-//     //static async Task ShowAllSamples()
-//     //{
-//     //    Console.WriteLine("\n=== All Samples ===");
-//     //    try
-//     //    {
-//     //        var response = await client!.GetAllAsync(new EmptyRequest());
-
-//     //        if (response != null && response.Items != null && response.Items.Count > 0)
-//     //        {
-//     //            Console.WriteLine($"Found {response.Items.Count} samples:\n");
-//     //            Console.WriteLine("{0,-5} {1,-15} {2,-15} {3,-15} {4,-20} {5,-10}",
-//     //                "ID", "Profile ID", "Sample Type", "Appointment", "Notes", "Processed");
-//     //            Console.WriteLine(new string('-', 85));
-
-//     //            foreach (var item in response.Items)
-//     //            {
-//     //                Console.WriteLine("{0,-5} {1,-15} {2,-15} {3,-15} {4,-20} {5,-10}",
-//     //                    item.SampleThinhLcid,
-//     //                    item.ProfileThinhLcid,
-//     //                    item.SampleTypeThinhLcid,
-//     //                    item.AppointmentsTienDmid,
-//     //                    item.Notes?.Length > 17 ? item.Notes.Substring(0, 17) + "..." : item.Notes,
-//     //                    item.IsProcessed ? "Yes" : "No");
-//     //            }
-//     //        }
-//     //        else
-//     //        {
-//     //            Console.WriteLine("No samples found.");
-//     //        }
-//     //    }
-//     //    catch (Exception ex)
-//     //    {
-//     //        Console.WriteLine($"Error retrieving samples: {ex.Message}");
-//     //    }
-//     //}
-
-//     //static async Task ShowSampleDetail()
-//     //{
-//     //    Console.WriteLine("\n=== Sample Detail ===");
-//     //    Console.Write("Enter Sample ID: ");
-
-//     //    if (int.TryParse(Console.ReadLine(), out int sampleId))
-//     //    {
-//     //        try
-//     //        {
-//     //            var request = new SampleThinhLcIDRequest { SampleThinhLcid = sampleId };
-//     //            var response = await client!.GetById(request);
-
-//     //            if (response != null)
-//     //            {
-//     //                Console.WriteLine("\n--- Sample Information ---");
-//     //                Console.WriteLine($"Sample ID: {response.SampleThinhLcid}");
-//     //                Console.WriteLine($"Profile ID: {response.ProfileThinhLcid}");
-//     //                Console.WriteLine($"Sample Type ID: {response.SampleTypeThinhLcid}");
-//     //                Console.WriteLine($"Appointment ID: {response.AppointmentsTienDmid}");
-//     //                Console.WriteLine($"Notes: {response.Notes}");
-//     //                Console.WriteLine($"Is Processed: {(response.IsProcessed ? "Yes" : "No")}");
-//     //                Console.WriteLine($"Count: {response.Count}");
-//     //                Console.WriteLine($"Collected At: {response.CollectedAt}");
-//     //                Console.WriteLine($"Created At: {response.CreatedAt}");
-//     //                Console.WriteLine($"Updated At: {response.UpdatedAt}");
-//     //                Console.WriteLine($"Deleted At: {response.DeletedAt}");
-//     //            }
-//     //        }
-//     //        catch (Exception ex)
-//     //        {
-//     //            Console.WriteLine($"Error retrieving sample detail: {ex.Message}");
-//     //        }
-//     //    }
-//     //    else
-//     //    {
-//     //        Console.WriteLine("Invalid Sample ID!");
-//     //    }
-//     //}
-
-//     //static async Task CreateSample()
-//     //{
-//     //    Console.WriteLine("\n=== Create New Sample ===");
-
-//     //    try
-//     //    {
-//     //        var newSample = new SampleThinhLc();
-
-//     //        Console.Write("Enter Profile ID: ");
-//     //        if (int.TryParse(Console.ReadLine(), out int profileId))
-//     //            newSample.ProfileThinhLcid = profileId;
-
-//     //        Console.Write("Enter Sample Type ID: ");
-//     //        if (int.TryParse(Console.ReadLine(), out int sampleTypeId))
-//     //            newSample.SampleTypeThinhLcid = sampleTypeId;
-
-//     //        Console.Write("Enter Appointment ID: ");
-//     //        if (int.TryParse(Console.ReadLine(), out int appointmentId))
-//     //            newSample.AppointmentsTienDmid = appointmentId;
-
-//     //        Console.Write("Enter Notes: ");
-//     //        newSample.Notes = Console.ReadLine() ?? "";
-
-//     //        Console.Write("Enter Count: ");
-//     //        if (int.TryParse(Console.ReadLine(), out int count))
-//     //            newSample.Count = count;
-
-//     //        Console.Write("Is Processed? (y/n): ");
-//     //        var processed = Console.ReadLine()?.ToLower();
-//     //        newSample.IsProcessed = processed == "y" || processed == "yes";
-
-//     //        newSample.CollectedAt = DateTime.Now.ToString("o");
-//     //        newSample.CreatedAt = DateTime.Now.ToString("o");
-
-//     //        var response = await client!.Create(newSample);
-
-//     //        if (response.Success)
-//     //        {
-//     //            Console.WriteLine($"Sample created successfully! ID: {response.Id}");
-//     //        }
-//     //        else
-//     //        {
-//     //            Console.WriteLine($"Failed to create sample: {response.Message}");
-//     //        }
-//     //    }
-//     //    catch (Exception ex)
-//     //    {
-//     //        Console.WriteLine($"Error creating sample: {ex.Message}");
-//     //    }
-//     //}
-
-//     //static async Task UpdateSample()
-//     //{
-//     //    Console.WriteLine("\n=== Update Sample ===");
-//     //    Console.Write("Enter Sample ID to update: ");
-
-//     //    if (int.TryParse(Console.ReadLine(), out int sampleId))
-//     //    {
-//     //        try
-//     //        {
-//     //            // First, get the existing sample
-//     //            var getRequest = new SampleThinhLcIDRequest { SampleThinhLcid = sampleId };
-//     //            var existingSample = await client!.GetById(getRequest);
-
-//     //            if (existingSample != null)
-//     //            {
-//     //                Console.WriteLine("\nCurrent sample information:");
-//     //                Console.WriteLine($"Profile ID: {existingSample.ProfileThinhLcid}");
-//     //                Console.WriteLine($"Sample Type ID: {existingSample.SampleTypeThinhLcid}");
-//     //                Console.WriteLine($"Appointment ID: {existingSample.AppointmentsTienDmid}");
-//     //                Console.WriteLine($"Notes: {existingSample.Notes}");
-//     //                Console.WriteLine($"Count: {existingSample.Count}");
-//     //                Console.WriteLine($"Is Processed: {existingSample.IsProcessed}");
-
-//     //                Console.WriteLine("\nEnter new values (press Enter to keep current value):");
-
-//     //                Console.Write($"Profile ID ({existingSample.ProfileThinhLcid}): ");
-//     //                var profileInput = Console.ReadLine();
-//     //                if (!string.IsNullOrEmpty(profileInput) && int.TryParse(profileInput, out int profileId))
-//     //                    existingSample.ProfileThinhLcid = profileId;
-
-//     //                Console.Write($"Sample Type ID ({existingSample.SampleTypeThinhLcid}): ");
-//     //                var sampleTypeInput = Console.ReadLine();
-//     //                if (!string.IsNullOrEmpty(sampleTypeInput) && int.TryParse(sampleTypeInput, out int sampleTypeId))
-//     //                    existingSample.SampleTypeThinhLcid = sampleTypeId;
-
-//     //                Console.Write($"Appointment ID ({existingSample.AppointmentsTienDmid}): ");
-//     //                var appointmentInput = Console.ReadLine();
-//     //                if (!string.IsNullOrEmpty(appointmentInput) && int.TryParse(appointmentInput, out int appointmentId))
-//     //                    existingSample.AppointmentsTienDmid = appointmentId;
-
-//     //                Console.Write($"Notes ({existingSample.Notes}): ");
-//     //                var notesInput = Console.ReadLine();
-//     //                if (!string.IsNullOrEmpty(notesInput))
-//     //                    existingSample.Notes = notesInput;
-
-//     //                Console.Write($"Count ({existingSample.Count}): ");
-//     //                var countInput = Console.ReadLine();
-//     //                if (!string.IsNullOrEmpty(countInput) && int.TryParse(countInput, out int count))
-//     //                    existingSample.Count = count;
-
-//     //                Console.Write($"Is Processed ({existingSample.IsProcessed}) (y/n): ");
-//     //                var processedInput = Console.ReadLine()?.ToLower();
-//     //                if (!string.IsNullOrEmpty(processedInput))
-//     //                    existingSample.IsProcessed = processedInput == "y" || processedInput == "yes";
-
-//     //                existingSample.UpdatedAt = DateTime.Now.ToString("o");
-
-//     //                var response = await client!.Update(existingSample);
-
-//     //                if (response.Success)
-//     //                {
-//     //                    Console.WriteLine("Sample updated successfully!");
-//     //                }
-//     //                else
-//     //                {
-//     //                    Console.WriteLine($"Failed to update sample: {response.Message}");
-//     //                }
-//     //            }
-//     //        }
-//     //        catch (Exception ex)
-//     //        {
-//     //            Console.WriteLine($"Error updating sample: {ex.Message}");
-//     //        }
-//     //    }
-//     //    else
-//     //    {
-//     //        Console.WriteLine("Invalid Sample ID!");
-//     //    }
-//     //}
-
-//     //static async Task DeleteSample()
-//     //{
-//     //    Console.WriteLine("\n=== Delete Sample ===");
-//     //    Console.Write("Enter Sample ID to delete: ");
-
-//     //    if (int.TryParse(Console.ReadLine(), out int sampleId))
-//     //    {
-//     //        try
-//     //        {
-//     //            // First, show the sample to be deleted
-//     //            var getRequest = new SampleThinhLcIDRequest { SampleThinhLcid = sampleId };
-//     //            var existingSample = await client!.GetById(getRequest);
-
-//     //            if (existingSample != null)
-//     //            {
-//     //                Console.WriteLine("\nSample to be deleted:");
-//     //                Console.WriteLine($"Sample ID: {existingSample.SampleThinhLcid}");
-//     //                Console.WriteLine($"Profile ID: {existingSample.ProfileThinhLcid}");
-//     //                Console.WriteLine($"Notes: {existingSample.Notes}");
-
-//     //                Console.Write("\nAre you sure you want to delete this sample? (y/n): ");
-//     //                var confirmation = Console.ReadLine()?.ToLower();
-
-//     //                if (confirmation == "y" || confirmation == "yes")
-//     //                {
-//     //                    var deleteRequest = new SampleThinhLcIDRequest { SampleThinhLcid = sampleId };
-//     //                    var response = await client!.Delete(deleteRequest);
-
-//     //                    if (response.Success)
-//     //                    {
-//     //                        Console.WriteLine("Sample deleted successfully!");
-//     //                    }
-//     //                    else
-//     //                    {
-//     //                        Console.WriteLine($"Failed to delete sample: {response.Message}");
-//     //                    }
-//     //                }
-//     //                else
-//     //                {
-//     //                    Console.WriteLine("Delete operation cancelled.");
-//     //                }
-//     //            }
-//     //        }
-//     //        catch (Exception ex)
-//     //        {
-//     //            Console.WriteLine($"Error deleting sample: {ex.Message}");
-//     //        }
-//     //    }
-//     //    else
-//     //    {
-//     //        Console.WriteLine("Invalid Sample ID!");
-//     //    }
-//     }
-// }
+    static async Task SampleTypeThinhLcCrud(SampleTypeThinhLCGRPC.SampleTypeThinhLCGRPCClient client)
+    {
+        bool back = false;
+        while (!back)
+        {
+            Console.WriteLine("\n--- SampleTypeThinhLC CRUD ---");
+            Console.WriteLine("1. List all");
+            Console.WriteLine("2. Get by ID");
+            Console.WriteLine("3. Create");
+            Console.WriteLine("4. Update");
+            Console.WriteLine("5. Delete");
+            Console.WriteLine("0. Back");
+            Console.Write("Choose: ");
+            var choice = Console.ReadLine();
+            switch (choice)
+            {
+                case "1":
+                    var allResponse = client.GetAllAsync(new EmptyRequest());
+                    foreach (var s in allResponse.Items)
+                    {
+                        Console.WriteLine($"ID: {s.SampleTypeThinhLcid}, Name: {s.Name}, Description: {s.Description}, CreatedAt: {s.CreatedAt}, UpdatedAt: {s.UpdatedAt}, DeletedAt: {s.DeletedAt}");
+                    }
+                    break;
+                case "2":
+                    Console.Write("Enter ID: ");
+                    if (int.TryParse(Console.ReadLine(), out int gid))
+                    {
+                        var item = await client.GetByIdAsync(new SampleTypeThinhLcIDRequest { SampleTypeThinhLcid = gid });
+                        if (item != null && item.SampleTypeThinhLcid != 0)
+                        {
+                            Console.WriteLine($"ID: {item.SampleTypeThinhLcid}, Name: {item.Name}, Description: {item.Description}, CreatedAt: {item.CreatedAt}, UpdatedAt: {item.UpdatedAt}, DeletedAt: {item.DeletedAt}");
+                        }
+                        else Console.WriteLine("Not found.");
+                    }
+                    break;
+                case "3":
+                    var create = new SampleTypeThinhLc();
+                    Console.Write("Name: "); create.Name = Console.ReadLine();
+                    Console.Write("Description: "); create.Description = Console.ReadLine();
+                    create.CreatedAt = DateTime.Now.ToString("o");
+                    create.UpdatedAt = DateTime.Now.ToString("o");
+                    create.DeletedAt = string.Empty;
+                    var cr = await client.CreateAsync(create);
+                    Console.WriteLine($"Created, result: {cr.Message}");
+                    break;
+                case "4":
+                    Console.Write("Enter ID to update: ");
+                    if (int.TryParse(Console.ReadLine(), out int uid))
+                    {
+                        var up = await client.GetByIdAsync(new SampleTypeThinhLcIDRequest { SampleTypeThinhLcid = uid });
+                        if (up != null && up.SampleTypeThinhLcid != 0)
+                        {
+                            string nameStr, descStr;
+                            Console.Write($"Name ({up.Name}): "); nameStr = Console.ReadLine(); if (!string.IsNullOrEmpty(nameStr)) up.Name = nameStr;
+                            Console.Write($"Description ({up.Description}): "); descStr = Console.ReadLine(); if (!string.IsNullOrEmpty(descStr)) up.Description = descStr;
+                            up.UpdatedAt = DateTime.Now.ToString("o");
+                            var ur = await client.UpdateAsync(up);
+                            Console.WriteLine($"Updated, result: {ur.Message}");
+                        }
+                        else Console.WriteLine("Not found.");
+                    }
+                    break;
+                case "5":
+                    Console.Write("Enter ID to delete: ");
+                    if (int.TryParse(Console.ReadLine(), out int did))
+                    {
+                        var dr = await client.DeleteAsync(new SampleTypeThinhLcIDRequest { SampleTypeThinhLcid = did });
+                        Console.WriteLine($"Deleted, result: {dr.Message}");
+                    }
+                    break;
+                case "0":
+                    back = true;
+                    break;
+                default:
+                    Console.WriteLine("Invalid choice.");
+                    break;
+            }
+        }
+    }
+}
