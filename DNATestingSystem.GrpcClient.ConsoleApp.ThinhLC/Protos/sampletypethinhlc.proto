@@ -1,0 +1,30 @@
+syntax = "proto3";
+
+import "common.proto";
+
+option csharp_namespace = "DNATestingSystem.GrpcService.ThinhLC.Protos";
+
+service SampleTypeThinhLCGRPC {
+  rpc GetAllAsync(EmptyRequest) returns (SampleTypeThinhLCList);
+  rpc GetById(SampleTypeThinhLcIDRequest) returns (SampleTypeThinhLc);
+  rpc Create(SampleTypeThinhLc) returns (CreateResponse);
+  rpc Update(SampleTypeThinhLc) returns (UpdateResponse);
+  rpc Delete(SampleTypeThinhLcIDRequest) returns (DeleteResponse);
+}
+
+message SampleTypeThinhLcIDRequest {
+  int32 sample_type_thinh_lcid = 1;
+}
+
+message SampleTypeThinhLc {
+  int32 sample_type_thinh_lcid = 1;
+  string name = 2;
+  string description = 3;
+  string created_at = 4;
+  string updated_at = 5;
+  string deleted_at = 6;
+}
+
+message SampleTypeThinhLCList {
+  repeated SampleTypeThinhLc items = 1;
+}

@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.14.36109.1
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNATestingSystem.Repository.ThinhLC", "DNATestingSystem.Repository.ThinhLC\DNATestingSystem.Repository.ThinhLC.csproj", "{DB64D71B-584B-DB95-6002-5D64F2638099}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNATestingSystem.Services.ThinhLC", "DNATestingSystem.Services.ThinhLC\DNATestingSystem.Services.ThinhLC.csproj", "{8AEA0115-CC82-8BCA-2BEF-3C0C05918932}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNATestingSystem.GrpcService.ThinhLC", "DNATestingSystem.GrpcService.ThinhLC\DNATestingSystem.GrpcService.ThinhLC.csproj", "{786E1569-19A9-4832-A084-EB8C679FE794}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DNATestingSystem.GrpcClient.ConsoleApp.ThinhLC", "DNATestingSystem.GrpcClient.ConsoleApp.ThinhLC\DNATestingSystem.GrpcClient.ConsoleApp.ThinhLC.csproj", "{F56F31CC-D3E8-4A6A-AD82-87F0959A40BB}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{DB64D71B-584B-DB95-6002-5D64F2638099}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DB64D71B-584B-DB95-6002-5D64F2638099}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DB64D71B-584B-DB95-6002-5D64F2638099}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DB64D71B-584B-DB95-6002-5D64F2638099}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AEA0115-CC82-8BCA-2BEF-3C0C05918932}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AEA0115-CC82-8BCA-2BEF-3C0C05918932}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AEA0115-CC82-8BCA-2BEF-3C0C05918932}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AEA0115-CC82-8BCA-2BEF-3C0C05918932}.Release|Any CPU.Build.0 = Release|Any CPU
+		{786E1569-19A9-4832-A084-EB8C679FE794}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{786E1569-19A9-4832-A084-EB8C679FE794}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{786E1569-19A9-4832-A084-EB8C679FE794}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{786E1569-19A9-4832-A084-EB8C679FE794}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F56F31CC-D3E8-4A6A-AD82-87F0959A40BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F56F31CC-D3E8-4A6A-AD82-87F0959A40BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F56F31CC-D3E8-4A6A-AD82-87F0959A40BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F56F31CC-D3E8-4A6A-AD82-87F0959A40BB}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {865CB843-F517-4374-BB1A-3B2A692C53E9}
+	EndGlobalSection
+EndGlobal
