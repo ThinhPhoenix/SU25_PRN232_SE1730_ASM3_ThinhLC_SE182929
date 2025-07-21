@@ -85,15 +85,15 @@ namespace DNATestingSystem.GrpcService.ThinhLC.Services
                     Description = request.Description,
                     CreatedAt = string.IsNullOrEmpty($"{request.CreatedAt}") ? (DateTime?)null : DateTime.Parse($"{request.CreatedAt}"),
                     UpdatedAt = string.IsNullOrEmpty($"{request.UpdatedAt}") ? (DateTime?)null : DateTime.Parse($"{request.UpdatedAt}"),
-                    DeletedAt = string.IsNullOrEmpty($"{request.DeletedAt}") ? (DateTime?)null : DateTime.Parse($"{request.DeletedAt}")
+                    DeletedAt = string.IsNullOrWhiteSpace(request.DeletedAt) ? (DateTime?)null : DateTime.Parse(request.DeletedAt)
                 };
                 var id = await _service.CreateAsync(item);
                 return new CreateResponse { Id = id, Success = true, Message = "Created successfully" };
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Create: {ex.Message}");
-                return new CreateResponse { Id = 0, Success = false, Message = "An error occurred while creating the item." };
+                Console.WriteLine($"Error in Create: {ex}");
+                return new CreateResponse { Id = 0, Success = false, Message = $"Error: {ex.Message}" };
             }
         }
 
@@ -101,22 +101,31 @@ namespace DNATestingSystem.GrpcService.ThinhLC.Services
         {
             try
             {
+                DateTime? deletedAt = null;
+                if (!string.IsNullOrWhiteSpace(request.DeletedAt))
+                {
+                    if (DateTime.TryParse(request.DeletedAt, out var dt))
+                        deletedAt = dt;
+                    else
+                        return new UpdateResponse { AffectedRows = 0, Success = false, Message = "Invalid DeletedAt format." };
+                }
+
                 var item = new DNATestingSystem.Repository.ThinhLC.Models.SampleTypeThinhLc
                 {
                     SampleTypeThinhLcid = request.SampleTypeThinhLcid,
                     TypeName = request.Name,
                     Description = request.Description,
-                    CreatedAt = string.IsNullOrEmpty($"{request.CreatedAt}") ? (DateTime?)null : DateTime.Parse($"{request.CreatedAt}"),
-                    UpdatedAt = string.IsNullOrEmpty($"{request.UpdatedAt}") ? (DateTime?)null : DateTime.Parse($"{request.UpdatedAt}"),
-                    DeletedAt = string.IsNullOrEmpty($"{request.DeletedAt}") ? (DateTime?)null : DateTime.Parse($"{request.DeletedAt}")
+                    CreatedAt = string.IsNullOrWhiteSpace(request.CreatedAt) ? (DateTime?)null : DateTime.Parse(request.CreatedAt),
+                    UpdatedAt = string.IsNullOrWhiteSpace(request.UpdatedAt) ? (DateTime?)null : DateTime.Parse(request.UpdatedAt),
+                    DeletedAt = deletedAt
                 };
                 var affectedRows = await _service.UpdateAsync(item);
                 return new UpdateResponse { AffectedRows = affectedRows, Success = affectedRows > 0, Message = affectedRows > 0 ? "Updated successfully" : "No record updated" };
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Update: {ex.Message}");
-                return new UpdateResponse { AffectedRows = 0, Success = false, Message = "An error occurred while updating the item." };
+                Console.WriteLine($"Error in Update: {ex}");
+                return new UpdateResponse { AffectedRows = 0, Success = false, Message = $"Error: {ex.Message}" };
             }
         }
 

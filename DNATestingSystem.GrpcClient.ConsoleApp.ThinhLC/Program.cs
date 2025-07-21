@@ -85,10 +85,8 @@ class Program
                     Console.Write("Notes: "); create.Notes = Console.ReadLine();
                     Console.Write("IsProcessed (true/false): "); var isProc = Console.ReadLine(); create.IsProcessed = bool.TryParse(isProc, out bool ip) ? ip : false;
                     Console.Write("Count: "); create.Count = int.TryParse(Console.ReadLine(), out int c) ? c : 0;
-                    create.CollectedAt = DateTime.Now.ToString("o");
-                    create.CreatedAt = DateTime.Now.ToString("o");
-                    create.UpdatedAt = DateTime.Now.ToString("o");
-                    create.DeletedAt = string.Empty;
+                    // Server sets all Date fields to now, so we do not set them here
+                    create.DeletedAt = "";
                     var cr = await client.CreateAsync(create);
                     Console.WriteLine($"Created, result: {cr.Message}");
                     break;
@@ -106,7 +104,8 @@ class Program
                             Console.Write($"Notes ({up.Notes}): "); var n = Console.ReadLine(); if (!string.IsNullOrEmpty(n)) up.Notes = n;
                             Console.Write($"IsProcessed ({up.IsProcessed}): "); isProcStr = Console.ReadLine(); if (bool.TryParse(isProcStr, out bool ipVal)) up.IsProcessed = ipVal;
                             Console.Write($"Count ({up.Count}): "); cntStr = Console.ReadLine(); if (int.TryParse(cntStr, out int cntVal)) up.Count = cntVal;
-                            up.UpdatedAt = DateTime.Now.ToString("o");
+                            // Server sets UpdatedAt and all Date fields, so we do not set them here
+                            up.DeletedAt = string.IsNullOrWhiteSpace(up.DeletedAt) ? "" : up.DeletedAt;
                             var ur = await client.UpdateAsync(up);
                             Console.WriteLine($"Updated, result: {ur.Message}");
                         }
@@ -170,9 +169,8 @@ class Program
                     var create = new SampleTypeThinhLc();
                     Console.Write("Name: "); create.Name = Console.ReadLine();
                     Console.Write("Description: "); create.Description = Console.ReadLine();
-                    create.CreatedAt = DateTime.Now.ToString("o");
-                    create.UpdatedAt = DateTime.Now.ToString("o");
-                    create.DeletedAt = string.Empty;
+                    // Server sets all Date fields to now, so we do not set them here
+                    create.DeletedAt = "";
                     var cr = await client.CreateAsync(create);
                     Console.WriteLine($"Created, result: {cr.Message}");
                     break;
@@ -184,9 +182,10 @@ class Program
                         if (up != null && up.SampleTypeThinhLcid != 0)
                         {
                             string nameStr, descStr;
-                            Console.Write($"Name ({up.Name}): "); nameStr = Console.ReadLine(); if (!string.IsNullOrEmpty(nameStr)) up.Name = nameStr;
-                            Console.Write($"Description ({up.Description}): "); descStr = Console.ReadLine(); if (!string.IsNullOrEmpty(descStr)) up.Description = descStr;
-                            up.UpdatedAt = DateTime.Now.ToString("o");
+                            Console.Write($"Name ({up.Name}): "); nameStr = Console.ReadLine(); up.Name = nameStr ?? "";
+                            Console.Write($"Description ({up.Description}): "); descStr = Console.ReadLine(); up.Description = descStr ?? "";
+                            // Server sets UpdatedAt and all Date fields, so we do not set them here
+                            up.DeletedAt = string.IsNullOrWhiteSpace(up.DeletedAt) ? "" : up.DeletedAt;
                             var ur = await client.UpdateAsync(up);
                             Console.WriteLine($"Updated, result: {ur.Message}");
                         }

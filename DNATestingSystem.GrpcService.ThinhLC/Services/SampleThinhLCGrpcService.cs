@@ -91,27 +91,28 @@ namespace DNATestingSystem.GrpcService.ThinhLC.Services
         {
             try
             {
+                var now = DateTime.Now;
                 var sample = new DNATestingSystem.Repository.ThinhLC.Models.SampleThinhLc
                 {
-                    SampleThinhLcid = request.SampleThinhLcid,
+                    // Do NOT set SampleThinhLcid for new records, let the DB auto-generate it
                     ProfileThinhLcid = request.ProfileThinhLcid,
                     SampleTypeThinhLcid = request.SampleTypeThinhLcid,
                     AppointmentsTienDmid = request.AppointmentsTienDmid,
-                    Notes = request.Notes,
+                    Notes = request.Notes ?? string.Empty,
                     IsProcessed = request.IsProcessed,
                     Count = request.Count,
-                    CollectedAt = string.IsNullOrEmpty($"{request.CollectedAt}") ? (DateTime?)null : DateTime.Parse($"{request.CollectedAt}"),
-                    CreatedAt = string.IsNullOrEmpty($"{request.CreatedAt}") ? (DateTime?)null : DateTime.Parse($"{request.CreatedAt}"),
-                    UpdatedAt = string.IsNullOrEmpty($"{request.UpdatedAt}") ? (DateTime?)null : DateTime.Parse($"{request.UpdatedAt}"),
-                    DeletedAt = string.IsNullOrEmpty($"{request.DeletedAt}") ? (DateTime?)null : DateTime.Parse($"{request.DeletedAt}")
+                    CollectedAt = now,
+                    CreatedAt = now,
+                    UpdatedAt = now,
+                    DeletedAt = now
                 };
                 var id = await _sampleService.CreateAsync(sample);
                 return new CreateResponse { Id = id, Success = true, Message = "Created successfully" };
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Create: {ex.Message}");
-                return new CreateResponse { Id = 0, Success = false, Message = "An error occurred while creating the sample." };
+                Console.WriteLine($"Error in Create: {ex}");
+                return new CreateResponse { Id = 0, Success = false, Message = $"Error: {ex.Message} | {ex.InnerException?.Message}" };
             }
         }
 
@@ -119,27 +120,33 @@ namespace DNATestingSystem.GrpcService.ThinhLC.Services
         {
             try
             {
-                var sample = new DNATestingSystem.Repository.ThinhLC.Models.SampleThinhLc
-                {
-                    SampleThinhLcid = request.SampleThinhLcid,
-                    ProfileThinhLcid = request.ProfileThinhLcid,
-                    SampleTypeThinhLcid = request.SampleTypeThinhLcid,
-                    AppointmentsTienDmid = request.AppointmentsTienDmid,
-                    Notes = request.Notes,
-                    IsProcessed = request.IsProcessed,
-                    Count = request.Count,
-                    CollectedAt = string.IsNullOrEmpty($"{request.CollectedAt}") ? (DateTime?)null : DateTime.Parse($"{request.CollectedAt}"),
-                    CreatedAt = string.IsNullOrEmpty($"{request.CreatedAt}") ? (DateTime?)null : DateTime.Parse($"{request.CreatedAt}"),
-                    UpdatedAt = string.IsNullOrEmpty($"{request.UpdatedAt}") ? (DateTime?)null : DateTime.Parse($"{request.UpdatedAt}"),
-                    DeletedAt = string.IsNullOrEmpty($"{request.DeletedAt}") ? (DateTime?)null : DateTime.Parse($"{request.DeletedAt}")
-                };
-                var affectedRows = await _sampleService.UpdateAsync(sample);
-                return new UpdateResponse { AffectedRows = affectedRows, Success = affectedRows > 0, Message = affectedRows > 0 ? "Updated successfully" : "No record updated" };
+                var now = DateTime.Now;
+                var sample = new DNATestingSystem.Repository.ThinhLC.Models.SampleThinhLc();
+                // Map fields from proto to entity
+                sample.SampleThinhLcid = request.SampleThinhLcid;
+                sample.ProfileThinhLcid = request.ProfileThinhLcid;
+                sample.SampleTypeThinhLcid = request.SampleTypeThinhLcid;
+                sample.AppointmentsTienDmid = request.AppointmentsTienDmid;
+                sample.Notes = request.Notes ?? string.Empty;
+                sample.IsProcessed = request.IsProcessed;
+                sample.Count = request.Count;
+                sample.CollectedAt = now;
+                sample.CreatedAt = now;
+                sample.UpdatedAt = now;
+                sample.DeletedAt = now;
+
+                var result = await _sampleService.UpdateAsync(sample);
+                return new UpdateResponse { AffectedRows = result, Success = result > 0, Message = result > 0 ? "Updated successfully" : "No record updated" };
+            }
+            catch (ArgumentNullException ex)
+            {
+                Console.WriteLine($"[Update Error] {ex.Message}");
+                return new UpdateResponse { AffectedRows = 0, Success = false, Message = $"ArgumentNullException: {ex.Message} (check for null proto string fields)" };
             }
             catch (Exception ex)
             {
-                Console.WriteLine($"Error in Update: {ex.Message}");
-                return new UpdateResponse { AffectedRows = 0, Success = false, Message = "An error occurred while updating the sample." };
+                Console.WriteLine($"[Update Error] {ex.Message}");
+                return new UpdateResponse { AffectedRows = 0, Success = false, Message = $"Error: {ex.Message} | {ex.InnerException?.Message}" };
             }
         }
 
